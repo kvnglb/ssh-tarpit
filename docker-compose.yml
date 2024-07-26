@@ -1,7 +1,9 @@
 version: "3.8"
 
+name: ssh-tarpit
 services:
   ssh:
+    container_name: ssh-tarpit_ssh
     build: ./ssh
 
     # Not ideal, but I haven't found a way to log the "clients" IP address instead of the containers one
@@ -17,12 +19,12 @@ services:
       # The used tarpit gets randomly choosen. To only use one, e.g. `SSH_TARPIT: "['banner']"`
       SSH_TARPIT: "['banner', 'kex']"
 
-      # Muste be the same port as in container db -> ports "127.0.0.1:<POSTGRES_PORT>:5432
+      # Must be the same port as in container db -> ports "127.0.0.1:<POSTGRES_PORT>:5432
       POSTGRES_PORT: 5444
 
       # Number of connections that are allowed to be trapped at the same time
       MAX_CONN: 6114
-      # Number of connections tahte are allowed to be trapped at the same time from the same IP address
+      # Number of connections that are allowed to be trapped at the same time from the same IP address
       IP_MAX_CONN: 100
 
       POSTGRES_SSH_PASSWORD: "${POSTGRES_SSH_PASSWORD}"
@@ -34,7 +36,8 @@ services:
     restart: always
 
   db:
-    image: postgres:15.1-bullseye
+    container_name: ssh-tarpit_db
+    image: postgres:16.3-bookworm
 
     # Must be the same port as in container ssh -> environment -> POSTGRES_PORT
     # "127.0.0.1:<POSTGRES_PORT>:5432"
