@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  ssh:
+    build: ./ssh
+
+    # Not ideal, but I haven't found a way to log the "clients" IP address instead of the containers one
+    # with slirp4netns and also connect to the db container.
+    network_mode: host
+
+    environment:
+      # IP address on which the tarpit should listen, "0.0.0.0" means all
+      SSH_IP_ADDR: "0.0.0.0"
+      # Port on which the tarpit should listen
+      SSH_PORT: 22
+
+      # The used tarpit gets randomly choosen. To only use one, e.g. `SSH_TARPIT: "['banner']"`
+      SSH_TARPIT: "['banner', 'kex']"
+
+      # Muste be the same port as in container db -> ports "127.0.0.1:<POSTGRES_PORT>:5432
+      POSTGRES_PORT: 5444
+
+      # Number of connections that are allowed to be trapped at the same time
+      MAX_CONN: 6114
+      # Number of connections tahte are allowed to be trapped at the same time from the same IP address
+      IP_MAX_CONN: 100
+
+      POSTGRES_SSH_PASSWORD: "${POSTGRES_SSH_PASSWORD}"
+
+    volumes:
+      - ./bind-mount/log:/ssh/log:Z
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:15.1-bullseye
+
+    # Must be the same port as in container ssh -> environment -> POSTGRES_PORT
+    # "127.0.0.1:<POSTGRES_PORT>:5432"
+    ports:
+      - "127.0.0.1:5444:5432"
+
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_SSH_PASSWORD: "${POSTGRES_SSH_PASSWORD}"
+    volumes:
+      - ./bind-mount/init/postgres:/docker-entrypoint-initdb.d:Z,ro
+      - postgres_data:/var/lib/postgresql/data:Z
+    restart: always
+
+volumes:
+  postgres_data:
+    driver: local
+

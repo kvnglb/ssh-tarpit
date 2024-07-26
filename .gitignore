@@ -1,0 +1,4 @@
+*__pycache__
+bind-mount/*
+!bind-mount/init/
+.env
