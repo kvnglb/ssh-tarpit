@@ -153,7 +153,7 @@ class SSHtarpit:
             self.q_log.put([addr[0], e])
             return
 
-        if data[:5] != b"SSH-2" and data[-1:] != b"\n":
+        if not (data[:5] == b"SSH-2" and data[-1:] == b"\n"):
             conn.close()
             self.q_log.put([addr[0], "No ssh init: {}".format(data)])
             return
