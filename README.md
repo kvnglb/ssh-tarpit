@@ -1,5 +1,5 @@
 # ssh-tarpit
-Inspired by [skeetos endlessh](https://github.com/skeeto/endlessh), this tarpit also works on the key exchange (kex) level and will use a database instead of logs for the trapped clients.
+Inspired by [skeetos endlessh](https://github.com/skeeto/endlessh), this tarpit also works on the key exchange (kex) level to slow down ssh bots or malicious ssh clients and will use a database instead of logs for the trapped clients.
 
 Depending on what is specified in the [compose file](./docker-compose.yml), ssh-tarpit randomly chooses between tarpitting at banner and kex level or tarpits always at banner or kex level.
 
@@ -40,7 +40,14 @@ The packet size is sent first as uint32, which means the packet can be theoretic
 
 [RFC4253, 6.1]
 
-Because of these limitations, kex trapping will not last endless like banner trapping does and will also not reach its full potential, like when processing 4GiB of data was a requirement. At least it lasts a bit of time, when malicious clients are prepared for an endless banner.
+Because of these limitations, kex trapping will not last endless like banner trapping does and will also not reach its full potential, like when processing 4GiB of data was a requirement. At least it lasts a little while, when malicious clients are ready for an endless banner.
+
+## Comparison of tarpits
+The left side is a boxplot for both tarpits and on the right side is a histogram.
+
+![Data/plot.svg](Data/plot.svg)
+
+Meehhh... As visible in the graph, the banner tarpit traps much longer than the kex one. Either the ssh scrapers are more interested in the SSH-2 server type or I screwed something up.
 
 # Quickstart
 ## Preconditions
@@ -105,10 +112,6 @@ Ensure that
 Enter the database with
 ```
 podman exec -it ssh-tarpit_db psql -U ssh
-```
-which results in
-```
-ssh=>
 ```
 
 To gather everything, run `SELECT * FROM ip;`
