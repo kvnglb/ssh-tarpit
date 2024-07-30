@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import io
 import os
@@ -158,7 +159,7 @@ class SSHtarpit:
             self.q_log.put([addr[0], "No ssh init: {}".format(data)])
             return
 
-        tarpit = random.choice(eval(os.environ.get("SSH_TARPIT")))
+        tarpit = random.choice(ast.literal_eval(os.environ.get("SSH_TARPIT")))
 
         ident = hashlib.md5("{}+{}".format(addr[0], time.time()).encode("ascii")).hexdigest()
         self.q_db.put([True, addr[0], ident, data_dec, tarpit])
